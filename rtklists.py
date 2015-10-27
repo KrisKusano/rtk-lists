@@ -12,6 +12,7 @@ Created on Sun Oct 18 16:38:38 2015
 import csv
 import os
 import io
+from random import shuffle
 
 finished_through = input('Up through what lesson have you finished? ')
 
@@ -56,17 +57,51 @@ for les in lessons:
     fkan.close()
     
 #%% write out all lessons finsihed so far
-fkey = utfopen(os.path.join('cards', 'all_keyword.csv'))
-fkan = utfopen(os.path.join('cards', 'all_kanji.csv'))
 learned_kanji = 0
+keystrs = []
+kanstrs = []
 for i in xrange(1, finished_through + 1):
     cards = sorted(lessons[i], key=lambda x: int(x['heisignumber']))
     learned_kanji += len(cards)
     for card in cards:
-        fkey.write(csvstr(card, 'keyword', 'kanji'))
-        fkan.write(csvstr(card, 'kanji', 'keyword'))
+        keystrs.append(csvstr(card, 'keyword', 'kanji'))
+        kanstrs.append(csvstr(card, 'kanji', 'keyword'))
+
+# last X
+uptolast = 100
+if len(keystrs) < uptolast:
+    uptolast = len(keystrs)
+lastxkey = keystrs[-uptolast:]
+lastxkan = kanstrs[-uptolast:]
+shuffle(lastxkey)
+shuffle(lastxkan)
+flastkey = utfopen(os.path.join('cards', 'last' + str(uptolast) + '_keyword.csv'))
+flastkan = utfopen(os.path.join('cards', 'last' + str(uptolast) + '_kanji.csv'))
+[flastkey.write(x) for x in lastxkey]
+[flastkan.write(x) for x in lastxkan]
+flastkey.close()
+flastkan.close()
+
+# All, random order    
+shuffle(keystrs)
+shuffle(kanstrs)
+fkey = utfopen(os.path.join('cards', 'all_keyword.csv'))
+fkan = utfopen(os.path.join('cards', 'all_kanji.csv'))
+[fkey.write(x) for x in keystrs]
+[fkan.write(x) for x in kanstrs]
 fkey.close()
 fkan.close()
+
+# random X
+uptorand = 100
+if len(keystrs) < uptorand:
+    upto = len(keystrs)
+flastkey = utfopen(os.path.join('cards', 'rand' + str(uptorand) + '_keyword.csv'))
+flastkan = utfopen(os.path.join('cards', 'rand' + str(uptorand) + '_kanji.csv'))
+[flastkey.write(x) for x in keystrs[:upto]]
+[flastkan.write(x) for x in kanstrs[:upto]]
+flastkey.close()
+flastkan.close()
 
 print 'You have leared {} out of {} kanjk ({}%)'.format(learned_kanji, total_kanji, round(float(learned_kanji)/total_kanji*100.0, 1))
 print 'done'
